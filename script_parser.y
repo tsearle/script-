@@ -29,16 +29,27 @@ void yyerror(const char *s);
 %token ADD
 %token SCOLIN
 
+//evil temp hack, Script is just a calculator at the moment
+%type <ival> expr
+
+%left ADD
+
 %%
 // this is the actual grammar that bison will parse, but for right now it's just
 // something silly to echo to the screen what bison gets from flex.  We'll
 // make a real one shortly:
 
-parser:
-	parser INT      { cout << "bison found an int: " << *$2 << endl; }
-	| parser STRING { cout << "bison found a string: " << *$2 << endl; }
-	| EPSILON { cout << "End!" << endl; }
+exprs:
+	expr SCOLIN exprs
+	| EPSILON 
+;
+
+expr:
+	INT      { $$ = $1; cout << "bison found an int: " << *$1 << endl; }
+	| STRING { $$ = new ScriptInteger(1); cout << "bison found a string: " << *$1 << endl; }
+	| expr ADD expr { cout << "Adding " << *$1 << " to " << *$3 << endl; }
 	;
+
 
 EPSILON : ;
 %%
@@ -60,7 +71,7 @@ int main(int, char**) {
 		yyparse();
 	} while (!feof(yyin));
 */	
-	yy_scan_string("1 3 5 9\n\"Got a Goat?\"");
+	yy_scan_string("3 + 5;\n7+8;\"Party on!\";");
 	yyparse();
 	yylex_destroy();
 }
