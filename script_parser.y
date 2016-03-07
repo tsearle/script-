@@ -18,9 +18,9 @@ void yyerror(const char *s);
 // holding each of the types of tokens that Flex could return, and have Bison
 // use that union instead of "int" for the definition of "yystype":
 %union {
-	ScriptInteger ival;
+	ScriptInteger * ival;
 	float fval;
-	ScriptString sval;
+	ScriptString * sval;
 }
 
 // define the "terminal symbol" token types I'm going to use (in CAPS
@@ -28,6 +28,8 @@ void yyerror(const char *s);
 %token <ival> INT
 %token <fval> FLOAT
 %token <sval> STRING
+%token ADD
+%token SCOLIN
 
 %%
 // this is the actual grammar that bison will parse, but for right now it's just
