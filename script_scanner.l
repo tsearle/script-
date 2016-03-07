@@ -11,7 +11,6 @@ using namespace std;
 
 %%
 [ \t\n]          ;
-[0-9]+\.[0-9]+   { yylval.fval = atof(yytext); return FLOAT; }
 [0-9]+           { yylval.ival = new ScriptInteger(yytext); return INT; }
 [a-zA-Z0-9]+     { yylval.sval = new ScriptString(yytext); return STRING; }
 ["]([^"]|(\\\"))*["]     {yylval.sval = new ScriptString(yytext); return STRING;}

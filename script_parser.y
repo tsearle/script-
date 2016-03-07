@@ -19,14 +19,12 @@ void yyerror(const char *s);
 // use that union instead of "int" for the definition of "yystype":
 %union {
 	ScriptInteger * ival;
-	float fval;
 	ScriptString * sval;
 }
 
 // define the "terminal symbol" token types I'm going to use (in CAPS
 // by convention), and associate each with a field of the union:
 %token <ival> INT
-%token <fval> FLOAT
 %token <sval> STRING
 %token ADD
 %token SCOLIN
@@ -38,7 +36,6 @@ void yyerror(const char *s);
 
 parser:
 	parser INT      { cout << "bison found an int: " << *$2 << endl; }
-	| parser FLOAT  { cout << "bison found a float: " << $2 << endl; }
 	| parser STRING { cout << "bison found a string: " << *$2 << endl; }
 	| EPSILON { cout << "End!" << endl; }
 	;
