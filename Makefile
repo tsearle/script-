@@ -1,5 +1,6 @@
 FLEX=flex
 CC=g++
+CFLAGS=-std=c++0x
 HEADERS=Types.h
 SOURCES=Types.cpp
 BUILT_SOURCES=script_scanner.c script_parser.tab.c
@@ -10,7 +11,7 @@ BINARY=script
 all: $(BINARY)
 
 $(BINARY): $(SOURCES) $(BUILT_SOURCES) $(BUILT_HEADERS) $(HEADERS)
-	$(CC) $(SOURCES) $(BUILT_SOURCES) $(LIBS) -o $(BINARY)	
+	$(CC) $(CFLAGS) $(SOURCES) $(BUILT_SOURCES) $(LIBS) -o $(BINARY)	
 
 script_scanner.c script_scanner.h: script_scanner.l script_parser.tab.h
 	$(FLEX) script_scanner.l

@@ -1,11 +1,13 @@
 %{
 #include <cstdio>
 #include <iostream>
+#include <memory>
 #include "script_scanner.h"
 using namespace std;
 
  
 void yyerror(const char *s);
+
 %}
 
 %code requires {
@@ -18,9 +20,9 @@ void yyerror(const char *s);
 // holding each of the types of tokens that Flex could return, and have Bison
 // use that union instead of "int" for the definition of "yystype":
 %union {
-	ScriptInteger * ival;
-	ScriptString * sval;
-	Expression * eval;
+	ScriptInteger* ival;
+	ScriptString*  sval;
+	Expression* eval;
 }
 
 // define the "terminal symbol" token types I'm going to use (in CAPS
@@ -30,7 +32,6 @@ void yyerror(const char *s);
 %token ADD
 %token SCOLIN
 
-//evil temp hack, Script is just a calculator at the moment
 %type <eval> expr
 
 %left ADD
@@ -40,19 +41,23 @@ void yyerror(const char *s);
 // something silly to echo to the screen what bison gets from flex.  We'll
 // make a real one shortly:
 
-exprs:
-	expr SCOLIN exprs
-	| EPSILON 
+stmts:
+	stmts stmt
+	| stmt
+;
+
+stmt:
+	expr SCOLIN	{ cout << "Expresion Result: " << *($1->eval()) << endl; }
+
 ;
 
 expr:
 	INT      { $$ = $1; cout << "bison found an int: " << *$1 << endl; }
 	| STRING { $$ = $1; cout << "bison found a string: " << *$1 << endl; }
-	| expr ADD expr { cout << "Adding " << *$1 << " to " << *$3 <<  " REsult: " << *$1 + *$3 << endl; }
+	| expr ADD expr { $$ = new Add($1, $3);cout << "Adding " << *$1 << " to " << *$3 << endl; }
 	;
 
 
-EPSILON : ;
 %%
 
 int main(int, char**) {
