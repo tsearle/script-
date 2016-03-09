@@ -20,6 +20,7 @@ void yyerror(const char *s);
 %union {
 	ScriptInteger * ival;
 	ScriptString * sval;
+	Expression * eval;
 }
 
 // define the "terminal symbol" token types I'm going to use (in CAPS
@@ -30,7 +31,7 @@ void yyerror(const char *s);
 %token SCOLIN
 
 //evil temp hack, Script is just a calculator at the moment
-%type <ival> expr
+%type <eval> expr
 
 %left ADD
 
@@ -46,8 +47,8 @@ exprs:
 
 expr:
 	INT      { $$ = $1; cout << "bison found an int: " << *$1 << endl; }
-	| STRING { $$ = new ScriptInteger(1); cout << "bison found a string: " << *$1 << endl; }
-	| expr ADD expr { cout << "Adding " << *$1 << " to " << *$3 << endl; }
+	| STRING { $$ = $1; cout << "bison found a string: " << *$1 << endl; }
+	| expr ADD expr { cout << "Adding " << *$1 << " to " << *$3 <<  " REsult: " << *$1 + *$3 << endl; }
 	;
 
 
@@ -71,7 +72,7 @@ int main(int, char**) {
 		yyparse();
 	} while (!feof(yyin));
 */	
-	yy_scan_string("3 + 5;\n7+8;\"Party on!\";");
+	yy_scan_string("3 + \"5\";\n7+8;\"Party on!\";");
 	yyparse();
 	yylex_destroy();
 }
