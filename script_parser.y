@@ -23,17 +23,21 @@ void yyerror(const char *s);
 	ScriptInteger* ival;
 	ScriptString*  sval;
 	Expression* eval;
+	ScriptVariable* var;
 }
 
 // define the "terminal symbol" token types I'm going to use (in CAPS
 // by convention), and associate each with a field of the union:
 %token <ival> INT
 %token <sval> STRING
+%token <var> VARIABLE
 %token ADD
+%token ASSIGN
 %token SCOLIN
 
 %type <eval> expr
 
+%right ASSIGN
 %left ADD
 
 %%
@@ -47,14 +51,16 @@ stmts:
 ;
 
 stmt:
-	expr SCOLIN	{ cout << "Expresion Result: " << *($1->eval()) << endl; }
+	expr SCOLIN	{ cout << "************Expresion Result: " << *($1->eval()) << endl; }
 
 ;
 
 expr:
 	INT      { $$ = $1; cout << "bison found an int: " << *$1 << endl; }
 	| STRING { $$ = $1; cout << "bison found a string: " << *$1 << endl; }
-	| expr ADD expr { $$ = new Add($1, $3);cout << "Adding " << *$1 << " to " << *$3 << endl; }
+	| VARIABLE { $$ = $1; cout << "bison found a variable" << endl; }
+	| expr ADD expr { $$ = new Add($1, $3); }
+	| expr ASSIGN expr { Assignable * a = dynamic_cast<Assignable*>($1); if(a == nullptr) yyerror("assign: invalid lval"); $$ = new Assign(a, $3); }
 	;
 
 
@@ -77,7 +83,7 @@ int main(int, char**) {
 		yyparse();
 	} while (!feof(yyin));
 */	
-	yy_scan_string("3 + \"5\";\n7+8;\"Party on!\";");
+	yy_scan_string("something = 3 + \"5\";\n7+8+4;\"Party on!\";");
 	yyparse();
 	yylex_destroy();
 }

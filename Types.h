@@ -15,7 +15,27 @@ class Expression {
 	virtual ~Expression();
 };
 
+
+class Assignable {
+public:
+	virtual void assign(unique_ptr<Expression> rval) = 0;
+};
+class ScriptVariable : public Expression, public Assignable {
+private:
+	string name;
+	unique_ptr<Expression> lval;
+public:
+	ScriptVariable(const string & name);
+	void assign(unique_ptr<Expression> rval);
+	string toString();
+	unique_ptr<Expression> eval();
+	unique_ptr<Expression> add(Expression& e);
+
+	~ScriptVariable();
+};
+
 class ScriptInteger: public Expression {
+private:
 	int val;
 public:
 	ScriptInteger(int i);
@@ -29,6 +49,7 @@ public:
 };
 
 class ScriptString : public Expression {
+private:
 	string val;
 public:
 	ScriptString(const char* c);
@@ -44,6 +65,16 @@ class BinaryOperator : public Expression {
 public:
 	unique_ptr<Expression> add(Expression& e);
 	string toString() ;
+};
+
+class Assign : public BinaryOperator {
+private:
+	unique_ptr<Assignable> lval;
+	unique_ptr<Expression> rval;
+public:
+	Assign(Assignable* lval, Expression* rval);
+	unique_ptr<Expression> eval();
+	~Assign();
 };
 
 class Add : public BinaryOperator {

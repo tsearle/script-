@@ -3,11 +3,34 @@
 #include <sstream>
 
 ostream& operator << (ostream& os, Expression& e) {
-	os << "Expr: "  << e.toString();
+	os << e.toString();
 	return os;
 }
 
 Expression::~Expression() { cout << "Parent Destructor" << endl; }
+
+ScriptVariable::ScriptVariable(const string&name): name(name), lval(unique_ptr<Expression>(new ScriptString(""))) { }
+
+void ScriptVariable::assign(unique_ptr<Expression> rval) {
+	lval=std::move(rval->eval());
+	cout << "ScriptVariable: assigned value of " << *lval << endl;
+}
+
+string ScriptVariable::toString() {
+	return lval->toString();
+}
+
+unique_ptr<Expression> ScriptVariable::eval() {
+	return lval->eval();
+}
+
+unique_ptr<Expression> ScriptVariable::add(Expression& e) {
+	return lval->add(e);
+}
+
+ScriptVariable::~ScriptVariable() {
+	cout << "Destroying variable " << name << endl;
+}
 
 ScriptInteger::ScriptInteger(int i): val(i) {}
 ScriptInteger::ScriptInteger(char* c): val(atoi(c)) {}
@@ -72,6 +95,19 @@ unique_ptr<Expression> BinaryOperator::add(Expression& e) {
 string BinaryOperator::toString() {
 	const unique_ptr<Expression> val = eval();
 	return val->toString();
+}
+
+Assign::Assign(Assignable* lval, Expression* rval): lval(unique_ptr<Assignable>(lval)), rval(unique_ptr<Expression>(rval)) {}
+
+unique_ptr<Expression> Assign::eval() {
+	unique_ptr<Expression> res = rval->eval();
+	lval->assign(res->eval());
+	cout << "Assign: result=" << *res << endl;
+	return res;
+}
+
+Assign::~Assign() {
+	cout << "Destroying assignment" << endl;
 }
 
 Add::Add(Expression* lval, Expression* rval) : lval(unique_ptr<Expression>(lval)), rval(unique_ptr<Expression>(rval)) {}
