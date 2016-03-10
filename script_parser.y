@@ -2,17 +2,22 @@
 #include <cstdio>
 #include <iostream>
 #include <memory>
-#include "script_scanner.h"
 using namespace std;
+#include "script_parser.tab.h"
+#include "script_scanner.h"
 
  
-void yyerror(const char *s);
+void yyerror(yyscan_t scanner, const char *s);
 
 %}
 
 %code requires {
 #include "Types.h"
 }
+
+%pure-parser
+%lex-param {void * scanner}
+%parse-param { void * scanner}
 
 // Bison fundamentally works by asking flex to get the next token, which it
 // returns as an object of type "yystype".  But tokens could be of any
@@ -60,12 +65,13 @@ expr:
 	| STRING { $$ = $1; cout << "bison found a string: " << *$1 << endl; }
 	| VARIABLE { $$ = $1; cout << "bison found a variable" << endl; }
 	| expr ADD expr { $$ = new Add($1, $3); }
-	| expr ASSIGN expr { Assignable * a = dynamic_cast<Assignable*>($1); if(a == nullptr) yyerror("assign: invalid lval"); $$ = new Assign(a, $3); }
+	| expr ASSIGN expr { Assignable * a = dynamic_cast<Assignable*>($1); if(a == nullptr) yyerror(scanner,YY_("assign: invalid lval")); $$ = new Assign(a, $3); }
 	;
 
 
 %%
 
+yyscan_t scanner;
 int main(int, char**) {
 	/*
 	// open a file handle to a particular file:
@@ -83,12 +89,14 @@ int main(int, char**) {
 		yyparse();
 	} while (!feof(yyin));
 */	
-	yy_scan_string("something = 3 + \"5\";\n7+8+4;\"Party on!\";");
-	yyparse();
-	yylex_destroy();
+	yylex_init(&scanner);
+	YY_BUFFER_STATE bp = yy_scan_string("something = 3 + \"5\";\n7+8+4;\"Party on!\";", &scanner);
+	yy_switch_to_buffer(bp, scanner);
+	yyparse(scanner);
+	yylex_destroy(scanner);
 }
 
-void yyerror(const char *s) {
+void yyerror(yyscan_t scanner, const char *s) {
 	cout << "EEK, parse error!  Message: " << s << endl;
 	// might as well halt now:
 	exit(-1);
