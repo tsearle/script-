@@ -9,15 +9,26 @@ using namespace std;
  
 void yyerror(yyscan_t scanner, const char *s);
 
+#define scanner_handle state->scanner_ref
+
 %}
 
 %code requires {
 #include "Types.h"
+#include "SymbolTable.h"
+
+struct pass_to_bison {
+	SymbolTable * table;
+	void * scanner_ref;
+};
+
+
+
 }
 
 %pure-parser
-%lex-param {void * scanner}
-%parse-param { void * scanner}
+%lex-param {(void*)(scanner_handle)}
+%parse-param {pass_to_bison*state }
 
 // Bison fundamentally works by asking flex to get the next token, which it
 // returns as an object of type "yystype".  But tokens could be of any
@@ -65,35 +76,20 @@ expr:
 	| STRING { $$ = $1; cout << "bison found a string: " << *$1 << endl; }
 	| VARIABLE { $$ = $1; cout << "bison found a variable" << endl; }
 	| expr ADD expr { $$ = new Add($1, $3); }
-	| expr ASSIGN expr { Assignable * a = dynamic_cast<Assignable*>($1); if(a == nullptr) yyerror(scanner,YY_("assign: invalid lval")); $$ = new Assign(a, $3); }
+	| expr ASSIGN expr { Assignable * a = dynamic_cast<Assignable*>($1); if(a == nullptr) yyerror(state->scanner_ref,YY_("assign: invalid lval")); $$ = new Assign(a, $3); }
 	;
 
 
 %%
 
-yyscan_t scanner;
 int main(int, char**) {
-	/*
-	// open a file handle to a particular file:
-	FILE *myfile = fopen("a.parser.file", "r");
-	// make sure it is valid:
-	if (!myfile) {
-		cout << "I can't open a.parser.file!" << endl;
-		return -1;
-	}
-	// set flex to read from it instead of defaulting to STDIN:
-	yyin = myfile;
-	
-	// parse through the input until there is no more:
-	do {
-		yyparse();
-	} while (!feof(yyin));
-*/	
-	yylex_init(&scanner);
-	YY_BUFFER_STATE bp = yy_scan_string("something = 3 + \"5\";\n7+8+4;\"Party on!\";", &scanner);
-	yy_switch_to_buffer(bp, scanner);
-	yyparse(scanner);
-	yylex_destroy(scanner);
+	pass_to_bison state;
+	yylex_init(&state.scanner_ref);
+	yyset_extra(&state, state.scanner_ref);
+	YY_BUFFER_STATE bp = yy_scan_string("something = 3 + \"5\";\n7+8+4;\"Party on!\";", state.scanner_ref);
+	yy_switch_to_buffer(bp, state.scanner_ref);
+	yyparse(&state);
+	yylex_destroy(state.scanner_ref);
 }
 
 void yyerror(yyscan_t scanner, const char *s) {

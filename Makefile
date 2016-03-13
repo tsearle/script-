@@ -1,8 +1,8 @@
 FLEX=flex
 CC=g++
 CFLAGS=-std=c++0x
-HEADERS=Types.h
-SOURCES=Types.cpp
+HEADERS=Types.h SymbolTable.h
+SOURCES=Types.cpp SymbolTable.cpp
 BUILT_SOURCES=script_scanner.c script_parser.tab.c
 BUILT_HEADERS=script_parser.tab.h script_scanner.h
 LIBS=-lfl
