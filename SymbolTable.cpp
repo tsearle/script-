@@ -1,6 +1,7 @@
 #include "SymbolTable.h"
 
 void SymbolTable::put(const std::string & name, unique_ptr<Expression> expression) {
+	table.erase(name);
 	table.insert(std::make_pair(name,std::move(expression)));
 }
 

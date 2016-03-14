@@ -3,10 +3,11 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include "SymbolTable.h"
 using namespace std;
 
 class Expression {
-	public:
+public:
 	virtual string toString() = 0;
 	virtual unique_ptr<Expression> eval() = 0;
 	virtual unique_ptr<Expression> add(Expression& e) = 0;
@@ -23,9 +24,9 @@ public:
 class ScriptVariable : public Expression, public Assignable {
 private:
 	string name;
-	unique_ptr<Expression> lval;
+	shared_ptr<SymbolTable> table;
 public:
-	ScriptVariable(const string & name);
+	ScriptVariable(shared_ptr<SymbolTable> table, const string & name);
 	void assign(unique_ptr<Expression> rval);
 	string toString();
 	unique_ptr<Expression> eval();
@@ -88,5 +89,29 @@ public:
 };
 
 
+class Statement {
+public:
+	friend ostream& operator << (ostream& os, Statement& e);
+	virtual void execute(ostream & os)=0;
+};
+
+class ExpressionStatement: public Statement {
+private: 
+	unique_ptr<Expression> expr;
+public:
+	ExpressionStatement(Expression * e);
+	void execute(ostream & os);
+};
+
+class VardeclStatement: public Statement {
+private: 
+	string name;
+	unique_ptr<Expression> expr;
+	shared_ptr<SymbolTable> table;
+public:
+	VardeclStatement(shared_ptr<SymbolTable> table, string name, Expression * e);
+	VardeclStatement(shared_ptr<SymbolTable> table, string name);
+	void execute(ostream & os);
+};
 
 #endif

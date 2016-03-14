@@ -9,23 +9,31 @@ ostream& operator << (ostream& os, Expression& e) {
 
 Expression::~Expression() { cout << "Parent Destructor" << endl; }
 
-ScriptVariable::ScriptVariable(const string&name): name(name), lval(unique_ptr<Expression>(new ScriptString(""))) { }
+ScriptVariable::ScriptVariable(shared_ptr<SymbolTable> table, const string&name): table(table), name(name) { }
 
 void ScriptVariable::assign(unique_ptr<Expression> rval) {
-	lval=std::move(rval->eval());
-	cout << "ScriptVariable: assigned value of " << *lval << endl;
+	table->put(name,std::move(rval->eval()));
 }
 
 string ScriptVariable::toString() {
-	return lval->toString();
+	Expression * eval = table->get(name);
+	if (eval == nullptr) {
+		cerr << "Entry " << name << " not found!" << endl;
+		throw std::invalid_argument("entry " + name + " not found");
+	}
+	return eval->toString();
 }
 
 unique_ptr<Expression> ScriptVariable::eval() {
-	return lval->eval();
+	Expression * eval = table->get(name);
+	if (eval == nullptr) throw std::invalid_argument("entry "+ name + " not found");
+	return eval->eval();
 }
 
 unique_ptr<Expression> ScriptVariable::add(Expression& e) {
-	return lval->add(e);
+	Expression * eval = table->get(name);
+	if (eval == nullptr) throw std::invalid_argument("entry " + name + " not found");
+	return eval->add(e);
 }
 
 ScriptVariable::~ScriptVariable() {
@@ -102,7 +110,7 @@ Assign::Assign(Assignable* lval, Expression* rval): lval(unique_ptr<Assignable>(
 unique_ptr<Expression> Assign::eval() {
 	unique_ptr<Expression> res = rval->eval();
 	lval->assign(res->eval());
-	cout << "Assign: result=" << *res << endl;
+	cout << "Assign: result=" << *(res->eval()) << endl;
 	return res;
 }
 
@@ -113,9 +121,31 @@ Assign::~Assign() {
 Add::Add(Expression* lval, Expression* rval) : lval(unique_ptr<Expression>(lval)), rval(unique_ptr<Expression>(rval)) {}
 
 unique_ptr<Expression> Add::eval() {
+	cout << "Adding!" << endl;
 	return lval->add(*rval);
 }
 
 Add::~Add() {
 	cout << "Destruction of Add(" << lval->toString() << ", " << rval->toString() << ")" << endl;
+}
+
+ostream& operator << (ostream& os, Statement& e) {
+	e.execute(os);
+	return os;
+}
+ExpressionStatement::ExpressionStatement(Expression * e) : expr(e) {}
+
+void ExpressionStatement::execute(ostream & os) {
+	expr->eval();
+}
+
+VardeclStatement::VardeclStatement(shared_ptr<SymbolTable> table, string name, Expression * e): table(table), name(name), expr(unique_ptr<Expression>(e)) {}
+VardeclStatement::VardeclStatement(shared_ptr<SymbolTable> table, string name): table(table), name(name) {}
+
+void VardeclStatement::execute(ostream & os) {
+	if (!expr) {
+		table->put(name, unique_ptr<Expression>(new ScriptString("")));
+	} else {
+		table->put(name,expr->eval());
+	}
 }
