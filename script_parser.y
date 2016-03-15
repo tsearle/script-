@@ -57,6 +57,12 @@ struct pass_to_bison {
 %type <stmt> stmt
 %type <stmt> vardecl
 
+%destructor { cout << "freeing char*" << *$$ << endl; free($$); } <token>
+%destructor { cout << "freeing INT " << *$$ << endl; free($$); } <ival>
+%destructor { cout << "freeing STRING " << *$$ << endl; free($$); } <sval>
+%destructor { cout << "freeing Statement " << *$$ << endl; free($$); } <stmt>
+%destructor { cout << "freeing Expression " << *$$ << endl; free($$); } <eval>
+
 %right ASSIGN
 %left ADD
 
@@ -97,7 +103,7 @@ int main(int, char**) {
 	yylex_init(&state.scanner_ref);
 	yyset_extra(&state, state.scanner_ref);
 	state.table = unique_ptr<SymbolTable>(new SymbolTable());
-	YY_BUFFER_STATE bp = yy_scan_string("var something = 2+2; something=something+5;something2+2;", state.scanner_ref);
+	YY_BUFFER_STATE bp = yy_scan_string("var something = 2+2; something=something+5;something-2;something=something+1;", state.scanner_ref);
 	yy_switch_to_buffer(bp, state.scanner_ref);
 	yyparse(&state);
 	yylex_destroy(state.scanner_ref);
@@ -106,5 +112,5 @@ int main(int, char**) {
 void yyerror(yyscan_t scanner, const char *s) {
 	cout << "EEK, parse error!  Message: " << s << endl;
 	// might as well halt now:
-	exit(-1);
+//	exit(-1);
 }
