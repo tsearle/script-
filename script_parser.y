@@ -66,8 +66,8 @@ struct pass_to_bison {
 // make a real one shortly:
 
 stmts:
-	stmts stmt { cout << "Stmt: " << *$2 << endl;}
-	| stmt { cout << "Stmt: " << *$1 << endl;}
+	stmts stmt { try {cout << "Stmt2: " << *$2 << endl;} catch(std::invalid_argument &  e) { cout << e.what() << endl; yyerror(state->scanner_ref,"WTF?!?"); }}
+	| stmt { try { cout << "Stmt: " << *$1 << endl; } catch(std::invalid_argument &  e) { cout << e.what() << endl; yyerror(state->scanner_ref,"WTF?!?"); }}
 ;
 
 stmt:
@@ -97,7 +97,7 @@ int main(int, char**) {
 	yylex_init(&state.scanner_ref);
 	yyset_extra(&state, state.scanner_ref);
 	state.table = unique_ptr<SymbolTable>(new SymbolTable());
-	YY_BUFFER_STATE bp = yy_scan_string("var something = 2+2; something=something+5;something+2;", state.scanner_ref);
+	YY_BUFFER_STATE bp = yy_scan_string("var something = 2+2; something=something+5;something2+2;", state.scanner_ref);
 	yy_switch_to_buffer(bp, state.scanner_ref);
 	yyparse(&state);
 	yylex_destroy(state.scanner_ref);
