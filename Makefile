@@ -1,11 +1,11 @@
 FLEX=flex
 CC=g++
 CFLAGS=-std=c++0x
-HEADERS=Types.h SymbolTable.h
-SOURCES=Types.cpp SymbolTable.cpp
+HEADERS=Types.h SymbolTable.h ScriptObject.h
+SOURCES=Types.cpp SymbolTable.cpp ScriptObject.cpp script.cpp
 BUILT_SOURCES=script_scanner.c script_parser.tab.c
 BUILT_HEADERS=script_parser.tab.h script_scanner.h
-LIBS=-lfl
+LIBS=-lfl -ljsoncpp
 BINARY=script
 
 all: $(BINARY)
