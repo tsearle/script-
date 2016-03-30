@@ -17,6 +17,8 @@ var		 { return VAR; }
 [a-zA-Z0-9]+     { yylval->token = strdup(yytext); return TOKEN; }
 ["]([^"]|(\\\"))*["]     {yytext[strlen(yytext)-1] = '\0';yylval->sval = new ScriptString(yytext+1); return STRING;}
 [+]              { return ADD; }
+[\[]             { return LBRACKET; }
+[\]]             { return RBRACKET; }
 ;		 { return SCOLIN; }
 =		 { return ASSIGN; }
 .                ;

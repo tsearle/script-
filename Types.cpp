@@ -1,4 +1,5 @@
 #include "Types.h"
+#include "ScriptObject.h"
 #include <cstdlib>
 #include <sstream>
 
@@ -36,6 +37,20 @@ unique_ptr<Expression> ScriptVariable::add(Expression& e) {
 	return eval->add(e);
 }
 
+unique_ptr<Expression> ScriptVariable::index(Expression& e) {
+	Expression * eval = table->get(name);
+	ScriptObject * new_e = dynamic_cast<ScriptObject*>(eval);
+
+	if (new_e == nullptr) {
+		cout << "Not a ScriptObject, attempting to convert" << endl;
+		unique_ptr<ScriptObject> conv(new ScriptObject(eval->toString()));
+		table->put(name, std::move(conv));
+		eval = table->get(name);
+		new_e = dynamic_cast<ScriptObject*>(eval);
+	}
+	return new_e->index(e);
+}
+
 ScriptVariable::~ScriptVariable() {
 	cout << "Destroying variable " << name << endl;
 }
@@ -61,6 +76,10 @@ unique_ptr<Expression> ScriptInteger::add(Expression& e) {
 	}
 
 	return res;
+}
+
+unique_ptr<Expression> ScriptInteger::index(Expression& e) {
+	throw std::invalid_argument("[] cannot be use on type Int!");
 }
 
 
@@ -91,8 +110,14 @@ unique_ptr<Expression> ScriptString::eval() {
 }
 
 unique_ptr<Expression> ScriptString::add(Expression& e) {
-	unique_ptr<ScriptString> res = unique_ptr<ScriptString>(new ScriptString((char*)""));
+	unique_ptr<Expression> res = unique_ptr<Expression>(ScriptInteger(atoi(val.c_str())).add(e));
 	return res;
+}
+
+unique_ptr<Expression> ScriptString::index(Expression& e) {
+	unique_ptr<Expression> res = unique_ptr<Expression>(ScriptObject(val).index(e));
+	return res;
+
 }
 
 unique_ptr<Expression> BinaryOperator::add(Expression& e) {
@@ -100,16 +125,32 @@ unique_ptr<Expression> BinaryOperator::add(Expression& e) {
 	return val->add(e);
 }
 
+unique_ptr<Expression> BinaryOperator::index(Expression& e) {
+	unique_ptr<Expression> val = eval();
+	return val->index(e);
+}
+
 string BinaryOperator::toString() {
 	const unique_ptr<Expression> val = eval();
 	return val->toString();
 }
 
-Assign::Assign(Assignable* lval, Expression* rval): lval(unique_ptr<Assignable>(lval)), rval(unique_ptr<Expression>(rval)) {}
+Assign::Assign(Expression* lval, Expression* rval): lval(unique_ptr<Expression>(lval)), rval(unique_ptr<Expression>(rval)) {}
 
 unique_ptr<Expression> Assign::eval() {
+	Assignable * ass = dynamic_cast<Assignable*>(&*lval);
+
+	if(ass == nullptr) {
+		// not directly assignable, perhaps the eval will be
+		ass = dynamic_cast<Assignable*>(&*lval->eval());
+	}
+
+	if (ass == nullptr) {
+		throw std::invalid_argument("larg not assignable!");
+	}
+
 	unique_ptr<Expression> res = rval->eval();
-	lval->assign(res->eval());
+	ass->assign(res->eval());
 	cout << "Assign: result=" << *(res->eval()) << endl;
 	return res;
 }
@@ -127,6 +168,18 @@ unique_ptr<Expression> Add::eval() {
 
 Add::~Add() {
 	cout << "Destruction of Add(" << lval->toString() << ", " << rval->toString() << ")" << endl;
+}
+
+
+Index::Index(Expression* lval, Expression* rval) : lval(unique_ptr<Expression>(lval)), rval(unique_ptr<Expression>(rval)) {}
+
+unique_ptr<Expression> Index::eval() {
+	cout << "Indexing!" << endl;
+	return lval->index(*rval);
+}
+
+Index::~Index() {
+	cout << "Destruction of Index(" << lval->toString() << ", " << rval->toString() << ")" << endl;
 }
 
 ostream& operator << (ostream& os, Statement& e) {

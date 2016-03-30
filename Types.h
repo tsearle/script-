@@ -11,7 +11,7 @@ public:
 	virtual string toString() = 0;
 	virtual unique_ptr<Expression> eval() = 0;
 	virtual unique_ptr<Expression> add(Expression& e) = 0;
-	//virtual unique_ptr<Expression> index(Expression& e) = 0;
+	virtual unique_ptr<Expression> index(Expression& e) = 0;
 
 	friend ostream& operator << (ostream& os, Expression& e);
 	virtual ~Expression();
@@ -34,7 +34,7 @@ public:
 	string toString();
 	unique_ptr<Expression> eval();
 	unique_ptr<Expression> add(Expression& e);
-	//unique_ptr<Expression> index(Expression& e);
+	unique_ptr<Expression> index(Expression& e);
 
 	~ScriptVariable();
 };
@@ -48,7 +48,7 @@ public:
 	string toString() ;
 	unique_ptr<Expression> eval();
 	unique_ptr<Expression> add(Expression& e);
-	//unique_ptr<Expression> index(Expression& e);
+	unique_ptr<Expression> index(Expression& e);
 	~ScriptInteger();
 
 
@@ -63,7 +63,7 @@ public:
 	string toString() ;
 	unique_ptr<Expression> eval();
 	unique_ptr<Expression> add(Expression& e);
-	//unique_ptr<Expression> index(Expression& e);
+	unique_ptr<Expression> index(Expression& e);
 	~ScriptString();
 
 };
@@ -71,16 +71,16 @@ public:
 class BinaryOperator : public Expression {
 public:
 	unique_ptr<Expression> add(Expression& e);
-	//unique_ptr<Expression> index(Expression& e);
+	unique_ptr<Expression> index(Expression& e);
 	string toString() ;
 };
 
 class Assign : public BinaryOperator {
 private:
-	unique_ptr<Assignable> lval;
+	unique_ptr<Expression> lval;
 	unique_ptr<Expression> rval;
 public:
-	Assign(Assignable* lval, Expression* rval);
+	Assign(Expression* lval, Expression* rval);
 	unique_ptr<Expression> eval();
 	~Assign();
 };
@@ -95,7 +95,6 @@ public:
 	~Add();
 };
 
-/*
 class Index : public BinaryOperator {
 private:
 	unique_ptr<Expression> lval;
@@ -105,7 +104,6 @@ public:
 	unique_ptr<Expression> eval();
 	~Index();
 };
-*/
 
 class Statement {
 public:

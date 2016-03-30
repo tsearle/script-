@@ -9,7 +9,7 @@ int main(int, char**) {
 	yylex_init(&state.scanner_ref);
 	yyset_extra(&state, state.scanner_ref);
 	state.table = unique_ptr<SymbolTable>(new SymbolTable());
-	YY_BUFFER_STATE bp = yy_scan_string("var something = 2+2; something=something+5;something-2;something=something+1;", state.scanner_ref);
+	YY_BUFFER_STATE bp = yy_scan_string("var something = 2+2; something=something+5;var arr = \"[[1,2,3],[4,5,6],[7,8,9]]\"; arr[1][2]=0;arr[1];", state.scanner_ref);
 	yy_switch_to_buffer(bp, state.scanner_ref);
 	yyparse(&state);
 	yylex_destroy(state.scanner_ref);

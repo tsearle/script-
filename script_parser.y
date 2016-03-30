@@ -49,6 +49,8 @@ struct pass_to_bison {
 %token <sval> STRING
 %token <token> TOKEN
 %token ADD
+%token RBRACKET
+%token LBRACKET
 %token ASSIGN
 %token SCOLIN
 %token VAR
@@ -65,6 +67,7 @@ struct pass_to_bison {
 
 %right ASSIGN
 %left ADD
+%left LBRACKET
 
 %%
 // this is the actual grammar that bison will parse, but for right now it's just
@@ -92,7 +95,8 @@ expr:
 	| STRING { $$ = $1; cout << "bison found a string: " << *$1 << endl; }
 	| TOKEN { cout << "expr: found token" << endl; $$ = new ScriptVariable(state->table, $1); } 
 	| expr ADD expr { $$ = new Add($1, $3); }
-	| expr ASSIGN expr { Assignable * a = dynamic_cast<Assignable*>($1); if(a == nullptr) yyerror(state->scanner_ref,YY_("assign: invalid lval")); $$ = new Assign(a, $3); }
+	| expr LBRACKET expr RBRACKET { $$ = new Index($1, $3); }
+	| expr ASSIGN expr { $$ = new Assign($1, $3); }
 	;
 
 

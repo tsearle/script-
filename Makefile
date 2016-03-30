@@ -1,6 +1,6 @@
 FLEX=flex
 CC=g++
-CFLAGS=-std=c++0x
+CFLAGS=-std=c++0x -g
 HEADERS=Types.h SymbolTable.h ScriptObject.h
 SOURCES=Types.cpp SymbolTable.cpp ScriptObject.cpp script.cpp
 BUILT_SOURCES=script_scanner.c script_parser.tab.c
