@@ -58,9 +58,12 @@ unique_ptr<Script> script_parse(std::string input);
 %token ASSIGN
 %token SCOLIN
 %token VAR
+%token LBRACE
+%token RBRACE
 
 %type <eval> expr
 %type <stmt> stmt
+%type <stmt> stmtblk
 %type <stmt> vardecl
 
 %destructor { cout << "freeing char*" << *$$ << endl; free($$); } <token>
@@ -86,8 +89,16 @@ stmts:
 stmt:
 	expr SCOLIN	{ $$ = new ExpressionStatement($1); }
 	| vardecl SCOLIN  { $$ = $1; }
+	| stmtblk  { $$ = $1; }
 
 ;
+
+stmtblk:
+	LBRACE {state->scopes.push_back(new StatementBlock());}	
+		stmts 
+	RBRACE { $$ = state->scopes.back(); state->scopes.pop_back();}
+;
+
 
 vardecl:
 	VAR TOKEN { cout << "vardecl: found token" << endl; $$ = new VardeclStatement(state->table,$2); free($2);} 

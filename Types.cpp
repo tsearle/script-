@@ -208,11 +208,13 @@ void VardeclStatement::execute(ostream & os) {
 }
 
 void StatementBlock::execute(ostream & os) {
+	cout << "Entering statement block" << endl;
 	for (std::list<unique_ptr<Statement>>::iterator it = stmt_list.begin();
 			it != stmt_list.end();
 			++it) {
 		(*it)->execute(os);
 	}
+	cout << "Exiting statement block" << endl;
 }
 
 void StatementBlock::addStatement(Statement * stmt) {

@@ -21,5 +21,7 @@ var		 { return VAR; }
 [\]]             { return RBRACKET; }
 ;		 { return SCOLIN; }
 =		 { return ASSIGN; }
+[{]		 { return LBRACE; }
+[}]		 { return RBRACE; }
 .                ;
 %%
