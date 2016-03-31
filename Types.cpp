@@ -39,6 +39,11 @@ unique_ptr<Expression> ScriptVariable::add(Expression& e) {
 
 unique_ptr<Expression> ScriptVariable::index(Expression& e) {
 	Expression * eval = table->get(name);
+
+	if (eval == nullptr) {
+		throw std::invalid_argument("[] unknown variable " + name);
+	}
+		
 	ScriptObject * new_e = dynamic_cast<ScriptObject*>(eval);
 
 	if (new_e == nullptr) {

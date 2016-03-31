@@ -101,8 +101,8 @@ stmtblk:
 
 
 vardecl:
-	VAR TOKEN { cout << "vardecl: found token" << endl; $$ = new VardeclStatement(state->table,$2); free($2);} 
-	| VAR TOKEN ASSIGN expr { cout << "Declaring " << $2 << " with initial value of "<< *$4<< endl;$$ = new VardeclStatement(state->table, $2, $4); free($2); }
+	VAR TOKEN { $$ = new VardeclStatement(state->table,$2); free($2);} 
+	| VAR TOKEN ASSIGN expr { $$ = new VardeclStatement(state->table, $2, $4); free($2); }
 ;	
 
 expr:
