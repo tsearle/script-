@@ -37,9 +37,11 @@ unique_ptr<Expression> ScriptObject::add(Expression& e) {
 
 	cout << "Inside ScriptObject::add" << endl;
 
-	if (root->isConvertibleTo(Json::ValueType::intValue)) {
-		lval = root->asInt();
+	if (current->isConvertibleTo(Json::ValueType::intValue)) {
+		lval = current->asInt();
 	}
+
+	cout << "Inside ScriptObject::add lval=" << lval << endl;
 
 	ScriptInteger lObj = ScriptInteger(lval);
 	return lObj.add(e);
