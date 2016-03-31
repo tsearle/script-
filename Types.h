@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <list>
 #include "SymbolTable.h"
 using namespace std;
 
@@ -129,5 +130,17 @@ public:
 	VardeclStatement(shared_ptr<SymbolTable> table, string name);
 	void execute(ostream & os);
 };
+
+class StatementBlock : public Statement {
+private:
+	list<unique_ptr<Statement>> stmt_list;
+public:
+	void execute(ostream & os);
+	void addStatement(Statement * stmt);
+};	
+
+class Script : public StatementBlock {
+};
+
 
 #endif

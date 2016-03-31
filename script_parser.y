@@ -16,11 +16,15 @@ void yyerror(yyscan_t scanner, const char *s);
 %code requires {
 #include "Types.h"
 #include "SymbolTable.h"
+#include <list>
 
 struct pass_to_bison {
 	shared_ptr<SymbolTable>  table;
 	void * scanner_ref;
+	list <StatementBlock*> scopes;
 };
+
+unique_ptr<Script> script_parse(std::string input);
 
 
 
@@ -75,8 +79,8 @@ struct pass_to_bison {
 // make a real one shortly:
 
 stmts:
-	stmts stmt { try {cout << "Stmt2: " << *$2 << endl;} catch(std::invalid_argument &  e) { cout << e.what() << endl; yyerror(state->scanner_ref,"WTF?!?"); }}
-	| stmt { try { cout << "Stmt: " << *$1 << endl; } catch(std::invalid_argument &  e) { cout << e.what() << endl; yyerror(state->scanner_ref,"WTF?!?"); }}
+	stmts stmt { state->scopes.back()->addStatement($2); }
+	| stmt { state->scopes.back()->addStatement($1); }
 ;
 
 stmt:
@@ -102,3 +106,22 @@ expr:
 
 %%
 
+unique_ptr<Script> script_parse(std::string data) {
+	unique_ptr<Script> my_script(new Script());
+	pass_to_bison state;
+	yylex_init(&state.scanner_ref);
+	yyset_extra(&state, state.scanner_ref);
+	state.table = unique_ptr<SymbolTable>(new SymbolTable());
+	state.scopes.push_back(my_script.get());
+	YY_BUFFER_STATE bp = yy_scan_string(data.c_str(), state.scanner_ref);
+	yy_switch_to_buffer(bp, state.scanner_ref);
+	yyparse(&state);
+	yylex_destroy(state.scanner_ref);
+	return my_script;
+}
+
+void yyerror(yyscan_t scanner, const char *s) {
+	cout << "EEK, parse error!  Message: " << s << endl;
+	// might as well halt now:
+//	exit(-1);
+}

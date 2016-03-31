@@ -138,11 +138,15 @@ string BinaryOperator::toString() {
 Assign::Assign(Expression* lval, Expression* rval): lval(unique_ptr<Expression>(lval)), rval(unique_ptr<Expression>(rval)) {}
 
 unique_ptr<Expression> Assign::eval() {
-	Assignable * ass = dynamic_cast<Assignable*>(&*lval);
+	Assignable * ass = dynamic_cast<Assignable*>(lval.get());
+
+	// keep unique_ptr in scope if needed
+	unique_ptr<Expression> tmp_expr;
 
 	if(ass == nullptr) {
+		tmp_expr = lval->eval();
 		// not directly assignable, perhaps the eval will be
-		ass = dynamic_cast<Assignable*>(&*lval->eval());
+		ass = dynamic_cast<Assignable*>(tmp_expr.get());
 	}
 
 	if (ass == nullptr) {
@@ -201,4 +205,16 @@ void VardeclStatement::execute(ostream & os) {
 	} else {
 		table->put(name,expr->eval());
 	}
+}
+
+void StatementBlock::execute(ostream & os) {
+	for (std::list<unique_ptr<Statement>>::iterator it = stmt_list.begin();
+			it != stmt_list.end();
+			++it) {
+		(*it)->execute(os);
+	}
+}
+
+void StatementBlock::addStatement(Statement * stmt) {
+	stmt_list.push_back(unique_ptr<Statement>(stmt));
 }
