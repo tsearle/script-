@@ -123,9 +123,9 @@ vardecl:
 ;	
 
 expr:
-	INT      { $$ = $1; cout << "bison found an int: " << *$1 << endl; }
-	| STRING { $$ = $1; cout << "bison found a string: " << *$1 << endl; }
-	| TOKEN { cout << "expr: found token" << endl; $$ = new ScriptVariable(state->table, $1); } 
+	INT      { $$ = $1; }
+	| STRING { $$ = $1; }
+	| TOKEN { $$ = new ScriptVariable(state->table, $1); } 
 	| expr ADD expr { $$ = new Add($1, $3); }
 	| expr LBRACKET expr RBRACKET { $$ = new Index($1, $3); }
 	| expr ASSIGN expr { $$ = new Assign($1, $3); }
@@ -149,7 +149,7 @@ unique_ptr<Script> script_parse(std::string data) {
 }
 
 void yyerror(yyscan_t scanner, const char *s) {
-	cout << "EEK, parse error!  Message: " << s << endl;
+	cerr << "EEK, parse error!  Message: " << s << endl;
 	// might as well halt now:
 //	exit(-1);
 }

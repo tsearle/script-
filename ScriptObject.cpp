@@ -4,13 +4,21 @@
 
 ScriptObject::ScriptObject(const char* c) : root(new Json::Value()) {
 	std::istringstream iss(c);
-	iss >> *root;
+	try {
+		iss >> *root;
+	} catch (Json::RuntimeError e) {
+		throw std::invalid_argument("unable to convert to JSon Object");
+	}
 	current = &(*root);
 }
 
 ScriptObject::ScriptObject(const string &c) : root(new Json::Value()) {
 	std::istringstream iss(c);
-	iss >> *root;
+	try {
+		iss >> *root;
+	} catch (Json::RuntimeError e) {
+		throw std::invalid_argument("unable to convert to JSon Object");
+	}
 	current = &(*root);
 }
 

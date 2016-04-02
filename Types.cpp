@@ -8,7 +8,7 @@ ostream& operator << (ostream& os, Expression& e) {
 	return os;
 }
 
-Expression::~Expression() { cout << "Parent Destructor" << endl; }
+Expression::~Expression() { }
 
 ScriptVariable::ScriptVariable(shared_ptr<SymbolTable> table, const string&name): table(table), name(name) { }
 
@@ -19,7 +19,6 @@ void ScriptVariable::assign(unique_ptr<Expression> rval) {
 string ScriptVariable::toString() {
 	Expression * eval = table->get(name);
 	if (eval == nullptr) {
-		cerr << "Entry " << name << " not found!" << endl;
 		throw std::invalid_argument("entry " + name + " not found");
 	}
 	return eval->toString();
@@ -47,7 +46,6 @@ unique_ptr<Expression> ScriptVariable::index(Expression& e) {
 	ScriptObject * new_e = dynamic_cast<ScriptObject*>(eval);
 
 	if (new_e == nullptr) {
-		cout << "Not a ScriptObject, attempting to convert" << endl;
 		unique_ptr<ScriptObject> conv(new ScriptObject(eval->toString()));
 		table->put(name, std::move(conv));
 		eval = table->get(name);
@@ -57,26 +55,21 @@ unique_ptr<Expression> ScriptVariable::index(Expression& e) {
 }
 
 ScriptVariable::~ScriptVariable() {
-	cout << "Destroying variable " << name << endl;
 }
 
 ScriptInteger::ScriptInteger(int i): val(i) {}
 ScriptInteger::ScriptInteger(char* c): val(atoi(c)) {}
 
 ScriptInteger::~ScriptInteger() {
-	cout << "Deleting Integer " << val << endl;
 }
 
 unique_ptr<Expression> ScriptInteger::add(Expression& e) {
 	unique_ptr<ScriptInteger> res = unique_ptr<ScriptInteger>(new ScriptInteger(0));
-	cout << "About to dynamic cast!" << endl;
 	const ScriptInteger* new_e = dynamic_cast<const ScriptInteger*>(&e);
 
 	if (new_e == NULL) {
-		cout << "Integer conversion failed using string" << endl;
 		res->val = val + atoi(e.toString().c_str());
 	} else {
-		cout << "Integer conversion ok for " << e << " doing fast math" << endl;
 		res->val = val + new_e->val;
 	}
 
@@ -104,7 +97,6 @@ ScriptString::ScriptString(const char* c) : val(c) {}
 ScriptString::ScriptString(const string & c) : val(c) {}
 
 ScriptString::~ScriptString() {
-	cout << "Deleting String " << val << endl;
 }
 
 string ScriptString::toString() {return val;}
@@ -160,35 +152,29 @@ unique_ptr<Expression> Assign::eval() {
 
 	unique_ptr<Expression> res = rval->eval();
 	ass->assign(res->eval());
-	cout << "Assign: result=" << *(res->eval()) << endl;
 	return res;
 }
 
 Assign::~Assign() {
-	cout << "Destroying assignment" << endl;
 }
 
 Add::Add(Expression* lval, Expression* rval) : lval(unique_ptr<Expression>(lval)), rval(unique_ptr<Expression>(rval)) {}
 
 unique_ptr<Expression> Add::eval() {
-	cout << "Adding!" << endl;
 	return lval->add(*rval);
 }
 
 Add::~Add() {
-	cout << "Destruction of Add(" << lval->toString() << ", " << rval->toString() << ")" << endl;
 }
 
 
 Index::Index(Expression* lval, Expression* rval) : lval(unique_ptr<Expression>(lval)), rval(unique_ptr<Expression>(rval)) {}
 
 unique_ptr<Expression> Index::eval() {
-	cout << "Indexing!" << endl;
 	return lval->index(*rval);
 }
 
 Index::~Index() {
-	cout << "Destruction of Index(" << lval->toString() << ", " << rval->toString() << ")" << endl;
 }
 
 ostream& operator << (ostream& os, Statement& e) {
@@ -213,13 +199,11 @@ void VardeclStatement::execute(ostream & os) {
 }
 
 void StatementBlock::execute(ostream & os) {
-	cout << "Entering statement block" << endl;
 	for (std::list<unique_ptr<Statement>>::iterator it = stmt_list.begin();
 			it != stmt_list.end();
 			++it) {
 		(*it)->execute(os);
 	}
-	cout << "Exiting statement block" << endl;
 }
 
 void StatementBlock::addStatement(Statement * stmt) {
@@ -236,12 +220,9 @@ IfStatement::IfStatement(Expression * cond, Statement * trueStmt, Statement * fa
 	  falseStmt(unique_ptr<Statement>(falseStmt)){ }
 
 void IfStatement::execute(ostream & os) {
-	cout << "Executing If: " << endl;
 	if(atoi(cond->toString().c_str())) {
-		cout << "Executing If true" << endl;
 		trueStmt->execute(os);
 	} else if (falseStmt) {
-		cout << "Executing If false" << endl;
 		falseStmt->execute(os);
 	}
 }
