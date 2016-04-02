@@ -7,7 +7,7 @@ ScriptObject::ScriptObject(const char* c) : root(new Json::Value()) {
 	try {
 		iss >> *root;
 	} catch (Json::RuntimeError e) {
-		throw std::invalid_argument("unable to convert to JSon Object");
+		throw std::invalid_argument(string("unable to convert to JSon Object: ") + e.what());
 	}
 	current = &(*root);
 }
@@ -17,7 +17,7 @@ ScriptObject::ScriptObject(const string &c) : root(new Json::Value()) {
 	try {
 		iss >> *root;
 	} catch (Json::RuntimeError e) {
-		throw std::invalid_argument("unable to convert to JSon Object");
+		throw std::invalid_argument(string("unable to convert to JSon Object: ") + e.what());
 	}
 	current = &(*root);
 }
@@ -43,13 +43,9 @@ void ScriptObject::assign(unique_ptr<Expression> rval) {
 unique_ptr<Expression> ScriptObject::add(Expression& e) {
 	int lval = 0;
 
-	cout << "Inside ScriptObject::add" << endl;
-
 	if (current->isConvertibleTo(Json::ValueType::intValue)) {
 		lval = current->asInt();
 	}
-
-	cout << "Inside ScriptObject::add lval=" << lval << endl;
 
 	ScriptInteger lObj = ScriptInteger(lval);
 	return lObj.add(e);
@@ -57,13 +53,15 @@ unique_ptr<Expression> ScriptObject::add(Expression& e) {
 
 unique_ptr<Expression> ScriptObject::index(Expression& e) {
 
-	cout << "Inside ScriptObject::index" << endl;
 	int idx = atoi(e.toString().c_str());
 
 	unique_ptr<ScriptObject> result(new ScriptObject(*this));
-	result->current = &((*current)[idx]);
+	try {
+		result->current = &((*current)[idx]);
+	} catch(Json::LogicError e) {
+		throw std::invalid_argument(std::string("unable to index: ") + e.what());
+	}
 
-	cout << "Result of index:: " << result->toString() << endl;
 
 	return result;
 }
