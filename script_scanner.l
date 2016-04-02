@@ -13,6 +13,9 @@ using namespace std;
 %%
 [ \t\n]          ;
 var		 { return VAR; }
+if		 { return IF; }
+else		 { return ELSE; }
+print		 { return PRINT; }
 [0-9]+           { yylval->ival = new ScriptInteger(yytext); return INT; }
 [a-zA-Z0-9]+     { yylval->token = strdup(yytext); return TOKEN; }
 ["]([^"]|(\\\"))*["]     {yytext[strlen(yytext)-1] = '\0';yylval->sval = new ScriptString(yytext+1); return STRING;}
@@ -23,5 +26,7 @@ var		 { return VAR; }
 =		 { return ASSIGN; }
 [{]		 { return LBRACE; }
 [}]		 { return RBRACE; }
+[(]		 { return LPAREN; }
+[)]		 { return RPAREN; }
 .                ;
 %%

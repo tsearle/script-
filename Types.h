@@ -142,5 +142,24 @@ public:
 class Script : public StatementBlock {
 };
 
+class IfStatement : public Statement {
+private:
+	unique_ptr<Expression> cond;
+	unique_ptr<Statement> trueStmt;
+	unique_ptr<Statement> falseStmt;
+public:
+	IfStatement(Expression * cond, Statement * trueStmt);
+	IfStatement(Expression * cond, Statement * trueStmt, Statement * falseStmt);
+	void execute(ostream & os);
+};	
+
+class PrintStatement : public Statement {
+private:
+	unique_ptr<Expression> val;
+public:
+	PrintStatement(Expression * val);
+	void execute(ostream & os);
+};	
+
 
 #endif

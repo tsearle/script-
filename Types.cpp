@@ -225,3 +225,29 @@ void StatementBlock::execute(ostream & os) {
 void StatementBlock::addStatement(Statement * stmt) {
 	stmt_list.push_back(unique_ptr<Statement>(stmt));
 }
+
+IfStatement::IfStatement(Expression * cond, Statement * trueStmt) 
+	: cond(unique_ptr<Expression>(cond)), 
+	  trueStmt(unique_ptr<Statement>(trueStmt)){ }
+
+IfStatement::IfStatement(Expression * cond, Statement * trueStmt, Statement * falseStmt) 
+	: cond(unique_ptr<Expression>(cond)), 
+	  trueStmt(unique_ptr<Statement>(trueStmt)), 
+	  falseStmt(unique_ptr<Statement>(falseStmt)){ }
+
+void IfStatement::execute(ostream & os) {
+	cout << "Executing If: " << endl;
+	if(atoi(cond->toString().c_str())) {
+		cout << "Executing If true" << endl;
+		trueStmt->execute(os);
+	} else if (falseStmt) {
+		cout << "Executing If false" << endl;
+		falseStmt->execute(os);
+	}
+}
+
+PrintStatement::PrintStatement(Expression * val) : val(unique_ptr<Expression>(val)) {}
+
+void PrintStatement::execute(ostream & os) {
+	os << val->toString() << endl;
+}

@@ -15,15 +15,18 @@ std::string getInput() {
 
 int main(int, char**) {
 	std::string data = getInput();
+	std::ostringstream oss;
 
 	unique_ptr<Script> script = script_parse(data);
 
 	try {
 		cout << "Invoking script" << endl;	
-		script->execute(cout);
+		script->execute(oss);
 		cout << "ending script" << endl;
 	} catch (std::invalid_argument &  e) {
 		cout << e.what();
 	}
+
+	cout << "Result of Script" << endl << oss.str();
 	return 0;
 }

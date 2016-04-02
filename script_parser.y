@@ -60,11 +60,18 @@ unique_ptr<Script> script_parse(std::string input);
 %token VAR
 %token LBRACE
 %token RBRACE
+%token LPAREN
+%token RPAREN
+%token IF
+%token ELSE
+%token PRINT
 
 %type <eval> expr
 %type <stmt> stmt
 %type <stmt> stmtblk
 %type <stmt> vardecl
+%type <stmt> ifstmt 
+%type <stmt> printstmt 
 
 %destructor { cout << "freeing char*" << *$$ << endl; free($$); } <token>
 %destructor { cout << "freeing INT " << *$$ << endl; free($$); } <ival>
@@ -90,7 +97,17 @@ stmt:
 	expr SCOLIN	{ $$ = new ExpressionStatement($1); }
 	| vardecl SCOLIN  { $$ = $1; }
 	| stmtblk  { $$ = $1; }
+	| ifstmt  { $$ = $1; }
+	| printstmt  { $$ = $1; }
+;
 
+ifstmt:
+	IF LPAREN expr RPAREN stmt ELSE stmt { $$ = new IfStatement($3, $5, $7); }
+	| IF LPAREN expr RPAREN stmt { $$ = new IfStatement($3, $5); }
+;
+
+printstmt:
+	PRINT expr SCOLIN { $$ = new PrintStatement($2); }
 ;
 
 stmtblk:
