@@ -186,24 +186,32 @@ void Statement::setLineNo(int line) {
 	lineNo = line;
 }
 
-void wrapException(std::exception & e) {
-		throw std::invalid_argument(std::string("On Line: ") + e.what());
+void Statement::wrapException(std::exception & e) {
+		throw std::invalid_argument(std::string("On Line ")+ std::to_string(lineNo) + ": " + e.what());
 }
 
 ExpressionStatement::ExpressionStatement(Expression * e) : expr(e) {}
 
 void ExpressionStatement::execute(ostream & os) {
-	expr->eval();
+	try {
+		expr->eval();
+	} catch (std::exception & e) {
+		wrapException(e);
+	}
 }
 
 VardeclStatement::VardeclStatement(shared_ptr<SymbolTable> table, string name, Expression * e): table(table), name(name), expr(unique_ptr<Expression>(e)) {}
 VardeclStatement::VardeclStatement(shared_ptr<SymbolTable> table, string name): table(table), name(name) {}
 
 void VardeclStatement::execute(ostream & os) {
-	if (!expr) {
-		table->put(name, unique_ptr<Expression>(new ScriptString("")));
-	} else {
-		table->put(name,expr->eval());
+	try {
+		if (!expr) {
+			table->put(name, unique_ptr<Expression>(new ScriptString("")));
+		} else {
+			table->put(name,expr->eval());
+		}
+	} catch (std::exception & e) {
+		wrapException(e);
 	}
 }
 
@@ -239,5 +247,9 @@ void IfStatement::execute(ostream & os) {
 PrintStatement::PrintStatement(Expression * val) : val(unique_ptr<Expression>(val)) {}
 
 void PrintStatement::execute(ostream & os) {
-	os << val->toString() << endl;
+	try {
+		os << val->toString() << endl;
+	} catch (std::exception e) {
+		wrapException(e);
+	}
 }

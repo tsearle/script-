@@ -96,11 +96,11 @@ stmts:
 ;
 
 stmt:
-	expr SCOLIN	{ $$ = new ExpressionStatement($1); }
-	| vardecl SCOLIN  { $$ = $1; }
-	| stmtblk  { $$ = $1; }
-	| ifstmt  { $$ = $1; }
-	| printstmt  { $$ = $1; }
+	expr SCOLIN	{ $$ = new ExpressionStatement($1); $$->setLineNo(state->line);}
+	| vardecl SCOLIN  { $$ = $1; $$->setLineNo(state->line);}
+	| stmtblk  { $$ = $1; $$->setLineNo(state->line);}
+	| ifstmt  { $$ = $1; $$->setLineNo(state->line);}
+	| printstmt  { $$ = $1; $$->setLineNo(state->line);}
 ;
 
 ifstmt:
@@ -108,7 +108,7 @@ ifstmt:
 ;
 
 elsestmt:
-	ELSE stmt { $$ = $2; }
+	ELSE stmt { $$ = $2; $$->setLineNo(state->line); }
 	| {$$ = NULL;}
 ;
 

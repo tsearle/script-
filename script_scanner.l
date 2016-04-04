@@ -9,9 +9,11 @@ using namespace std;
 %option outfile="script_scanner.c" header-file="script_scanner.h"
 %option reentrant
 %option bison-bridge 
+%option extra-type="struct pass_to_bison*"
 
 %%
-[ \t\n]          ;
+[\n]         	 { yyextra->line++; }
+[ \t]          ;
 var		 { return VAR; }
 if		 { return IF; }
 else		 { return ELSE; }
