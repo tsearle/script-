@@ -72,6 +72,7 @@ unique_ptr<Script> script_parse(std::string input);
 %type <stmt> stmtblk
 %type <stmt> vardecl
 %type <stmt> ifstmt 
+%type <stmt> elsestmt 
 %type <stmt> printstmt 
 
 %destructor { cout << "freeing char*" << *$$ << endl; free($$); } <token>
@@ -103,8 +104,12 @@ stmt:
 ;
 
 ifstmt:
-	IF LPAREN expr RPAREN stmt ELSE stmt { $$ = new IfStatement($3, $5, $7); }
-	| IF LPAREN expr RPAREN stmt { $$ = new IfStatement($3, $5); }
+	IF LPAREN expr RPAREN stmt elsestmt { $$ = ($6 == NULL ? new IfStatement($3, $5) : new IfStatement($3, $5, $6)); }
+;
+
+elsestmt:
+	ELSE stmt { $$ = $2; }
+	| {$$ = NULL;}
 ;
 
 printstmt:
