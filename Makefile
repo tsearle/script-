@@ -17,7 +17,7 @@ script_scanner.c script_scanner.h: script_scanner.l script_parser.tab.h
 	$(FLEX) script_scanner.l
 
 script_parser.tab.c script_parser.tab.h: script_parser.y
-	bison -d script_parser.y -b script_parser
+	bison -v -d script_parser.y -b script_parser
      
 clean:
 	rm -f $(BUILT_SOURCES) $(BUILT_HEADERS) $(BINARY)

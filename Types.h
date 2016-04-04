@@ -107,8 +107,12 @@ public:
 };
 
 class Statement {
+private:
+	int lineNo;
 public:
 	friend ostream& operator << (ostream& os, Statement& e);
+	void setLineNo(int line);
+	void wrapException(std::exception &e);
 	virtual void execute(ostream & os)=0;
 };
 

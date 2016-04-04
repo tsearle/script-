@@ -181,6 +181,15 @@ ostream& operator << (ostream& os, Statement& e) {
 	e.execute(os);
 	return os;
 }
+
+void Statement::setLineNo(int line) {
+	lineNo = line;
+}
+
+void wrapException(std::exception & e) {
+		throw std::invalid_argument(std::string("On Line: ") + e.what());
+}
+
 ExpressionStatement::ExpressionStatement(Expression * e) : expr(e) {}
 
 void ExpressionStatement::execute(ostream & os) {

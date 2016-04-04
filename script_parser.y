@@ -20,6 +20,7 @@ void yyerror(yyscan_t scanner, const char *s);
 
 struct pass_to_bison {
 	shared_ptr<SymbolTable>  table;
+	int line = 0;
 	void * scanner_ref;
 	list <StatementBlock*> scopes;
 };
